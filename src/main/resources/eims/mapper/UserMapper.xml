@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="eims.mapper.UserMapper">
+    <resultMap id="UserResultMap" type="eims.pojo.User">
+        <result property="deptNo" column="deptno"/>
+        <result property="eid" column="e_id"/>
+    </resultMap>
+    <resultMap id="EmpResultMap" type="eims.pojo.Emp">
+        <result property="eid" column="e_id"/>
+        <result property="email" column="e_mail"/>
+    </resultMap>
+    <resultMap id="DeptResultMap" type="eims.pojo.Dept">
+        <result property="deptNo" column="deptno"/>
+        <result property="isDelete" column="isdelete"/>
+        <result property="deptName" column="deptname"/>
+    </resultMap>
+    <resultMap id="SalResultMap" type="eims.pojo.Sal">
+        <result property="eid" column="e_id"/>
+    </resultMap>
+    <resultMap id="LeavesResultMap" type="eims.pojo.Leave">
+        <result property="eid" column="e_id"/>
+        <result property="mid" column="m_id"/>
+        <result property="deptName" column="deptname"/>
+        <result property="lTime" column="ltime"/>
+        <result property="isAgree" column="isagree"/>
+        <result property="eName" column="name"/>
+    </resultMap>
+
+
+    <!--//查询账号密码-->
+    <select id="select" resultType="eims.pojo.User" resultMap="UserResultMap">
+        select * from user where username=#{username} and password=#{password}
+    </select>
+<!--    //查询用户是否存在-->
+    <select id="selectByUsername" resultType="eims.pojo.User" resultMap="UserResultMap">
+        select * from user where username=#{username}
+    </select>
+<!--    //添加注册数据-->
+    <insert id="add">
+        insert into user(username, password) VALUES (#{username},#{password})
+    </insert>
+    <insert id="add1">
+        insert into emp(name,phone,address,e_mail,job,deptno) values (#{name},#{phone},#{address},#{email},#{job},#{deptno})
+    </insert>
+
+    <!--    //查询所有员工信息-->
+    <select id="empSelectAll" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select e.e_id, e.name, e.sex, e.age, e.phone, e.e_mail, e.address, e.job, e.deptno, e.isdelete  from user a join emp e on a.e_id = e.e_id and a.isroot !=2 and e.isdelete=1;
+    </select>
+
+    <!--添加员工信息-->
+    <insert id="addEmp">
+        insert into emp(name, age, phone, `e_mail`, address, job, deptno) values (#{name},#{age},#{phone},#{email},#{address},#{job},#{deptno})
+    </insert>
+    <insert id="addUser">
+        insert into user(username, password,deptno) VALUES (#{username},#{password},#{deptNo})
+    </insert>
+    <!--    物理删除员工信息-->
+    <delete id="delete1">
+        delete from user where e_id= #{eid}
+    </delete>
+    <delete id="delete2">
+        delete from emp where e_id=#{eid}
+    </delete>
+
+
+    <!--    根据id查询-->
+    <select id="selectEmpById" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where e_id=#{eid}
+    </select>
+    <!--    修改员工信息-->
+    <update id="updateEmp">
+        update emp set name=#{name},sex=#{sex},age=#{age},phone=#{phone},e_mail=#{email},address=#{address},job=#{job},deptno=#{deptno} where e_id=#{eid}
+    </update>
+    <update id="updateUserDeptNo">
+        update user set deptno=#{deptNo} where e_id=#{eid}
+    </update>
+
+    <!--查询所有部门信息-->
+    <select id="deptSelectAll" resultType="eims.pojo.Dept" resultMap="DeptResultMap">
+        select * from dept where isdelete=1;
+    </select>
+
+    <!--    添加部门信息-->
+    <insert id="addDept">
+        insert into dept(deptno,deptname,introduction) values (#{deptNo},#{deptName},#{introduction})
+    </insert>
+    <!--    逻辑删除部门信息-->
+    <update id="updateIsDeleteDept">
+        update dept set isdelete=0 where deptno=#{deptNo}
+    </update>
+<!--    逻辑删除后添加-->
+    <update id="updateAddIsDeleteDept">
+        update dept set isdelete=1 where deptno=#{deptNo}
+    </update>
+
+    <!--    判断原本是否存在该账号-->
+    <select id="selectDeptByDeptNo" resultType="eims.pojo.Dept">
+        select * from dept where deptno=#{deptNo}
+    </select>
+    <!--    修改部门信息-->
+    <update id="updateDept">
+        update dept set deptno=#{deptNo},deptname=#{deptName},introduction=#{introduction} where id=#{id}
+    </update>
+
+    <!--    查询所有人员薪资-->
+    <select id="selectAllSal" resultType="eims.pojo.Sal" resultMap="SalResultMap">
+        select e.e_id,e.name,e.job,s.salary from emp e left join sal s on e.e_id = s.e_id where e.isdelete=1
+    </select>
+    <select id="selectSalById" resultType="eims.pojo.Sal" resultMap="SalResultMap">
+        select * from sal where e_id=#{eid}
+    </select>
+
+    <!--    修改员工薪资-->
+    <update id="updateSal">
+        update sal set salary=#{salary} where e_id=#{eid}
+    </update>
+
+    <!--    添加薪资薪资-->
+    <insert id="addSal">
+        insert into sal(e_id, salary) VALUES (#{eid},#{salary})
+    </insert>
+
+    <!--    查询所有请假信息-->
+    <select id="selectAllLeaves" resultType="eims.pojo.Leave" resultMap="LeavesResultMap">
+        select e.name,d.deptname,l.begin,l.end,l.ltime,l.reason,l.isagree from leavetable l join emp e on l.e_id = e.e_id join dept d on e.deptno = d.deptno;
+    </select>
+    <select id="mainSelectEmp" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp
+    </select>
+    <select id="mainSelectEmpByDeptNo" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where deptno=#{deptNo}
+    </select>
+    <select id="selectLeavesById" resultType="eims.pojo.Leave" resultMap="LeavesResultMap">
+        select e.name,l.e_id,l.begin,l.end,l.ltime,l.reason,l.isagree,l.id,e.deptno from leavetable l join emp e on l.e_id = e.e_id where l.m_id=#{mid};
+    </select>
+    <!--    修改员工请假是否同意-->
+    <update id="leaveIsAgreeServlet">
+        update leavetable set isagree=1 where id=#{id}
+    </update>
+    <update id="leaveIsNotAgreeServlet">
+        update leavetable set isagree=2 where id=#{id}
+    </update>
+    <!--id查询薪资信息-->
+    <select id="selectSalaryById" resultType="eims.pojo.Sal" resultMap="SalResultMap">
+        select * from sal where e_id=#{eid}
+    </select>
+<!--id查询请假信息-->
+    <select id="empSelectLeavesById" resultType="eims.pojo.Leave" resultMap="LeavesResultMap">
+        select * from leavetable where e_id=#{eid}
+    </select>
+
+    <!--    员工请假添加信息-->
+    <insert id="addLeave">
+        insert into leavetable(e_id, m_id, begin, end, ltime, reason) VALUES (#{eid},(select e_id from user where deptno=#{deptNo} and isRoot=1),#{begin},#{end},#{lTime},#{reason})
+    </insert>
+<!--通过eid查询用户密码-->
+    <select id="selectUserById" resultType="eims.pojo.User" resultMap="UserResultMap">
+        select * from user where e_id=#{eid}
+    </select>
+    <!--    通过eid修改密码-->
+    <update id="updateNewPassword">
+        update user set password=#{newpassword} where e_id=#{eid}
+    </update>
+
+    <!--查询账号密码-->
+    <select id="selectAllPassword" resultType="eims.pojo.User" resultMap="UserResultMap">
+        select e.name,e.e_id,u.username,u.password from user u join emp e on u.e_id=e.e_id
+    </select>
+
+    <!--重置密码-->
+    <update id="changepsd2">
+        update user set password='ICy5YqxZB1uWSwcVLSNLcA==' where e_id=#{eid}
+    </update>
+<!--    根据输入框搜索员工姓名-->
+    <select id="searchName" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where name like concat('%',#{name},'%') and deptno!=8800
+    </select>
+    <select id="searchEid" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where e_id=#{eid} and deptno!=8800
+    </select>
+    <select id="searchDept" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where deptno like concat('%',#{dept},'%') and deptno!=8800
+    </select>
+    <select id="searchDeptName" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where name like concat('%',#{arg0},'%') and deptno like concat('%',#{arg1},'%') and deptno!=8800
+    </select>
+    <select id="searchAddress" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where emp.address like concat('%',#{address},'%') and deptno!=8800
+    </select>
+    <select id="searchDeptAddress" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where address like concat('%',#{arg0},'%') and deptno like concat('%',#{arg1},'%') and deptno!=8800
+    </select>
+    <select id="searchAge" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where age like concat('%',#{age},'%') and deptno!=8800
+    </select>
+    <select id="searchAgeName" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where name like concat('%',#{name},'%') and age like concat('%',#{age},'%') and deptno!=8800
+    </select>
+    <select id="searchAgeAddress" resultType="eims.pojo.Emp" resultMap="EmpResultMap">
+        select * from emp where age like concat('%',#{arg0},'%') and address like concat('%',#{arg1},'%') and deptno!=8800
+    </select>
+</mapper>
